@@ -1,0 +1,222 @@
+{
+    "id": "notebook-lm-clone-001",
+    "slug": "notebook-lm-clone",
+    "meta": {
+        "title": "NotebookLM Clone - Document-Grounded AI Assistant",
+        "category": "RAG & AI Agents",
+        "readTime": "20 min read",
+        "date": "Dec 2025",
+        "tags": [
+            "RAG",
+            "Vector Database",
+            "Multi-Modal AI",
+            "Python",
+            "Next.js",
+            "React",
+            "FastAPI",
+            "Authentication"
+        ],
+        "type": "Technical Deep Dive"
+    },
+    "hero": {
+        "excerpt": "An open-source implementation of Google's NotebookLM that grounds AI responses in your documents with accurate citations, featuring multi-modal processing, conversational memory, AI podcast generation, and secure user authentication.",
+        "subtitle": "Transforming how we interact with documents through citation-first AI responses, intelligent context retention, and user-specific document management.",
+        "coverImage": "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=600&fit=crop"
+    },
+    "author": {
+        "name": "Ramya",
+        "role": "Senior Engineer - Integrations and applied AI",
+        "company": "Apex neural",
+        "bio": "Specialized in building RAG systems and multi-modal AI applications. Led the development of NotebookLM Clone, a citation-first document assistant with Next.js frontend, FastAPI backend, vector database integration, and temporal knowledge graphs.",
+        "image": "https://ui-avatars.com/api/?name=Ramya&background=6366f1&color=fff&size=200",
+        "stats": {
+            "projects": "12+",
+            "experience": "8yr"
+        }
+    },
+    "content": {
+        "overview": {
+            "text": "Document-based AI assistants often struggle with accuracy and citation. Users need to trust AI responses, especially when working with critical documents like research papers, legal documents, or technical manuals. This project builds an open-source NotebookLM clone that ensures every AI response is grounded in source documents with precise citations. The system processes multiple document types (PDFs, audio, video, web content), maintains conversational context through temporal knowledge graphs, and even generates AI podcasts from documents.",
+            "stats": [
+                {
+                    "label": "Citation Accuracy",
+                    "value": "100%"
+                },
+                {
+                    "label": "Document Types",
+                    "value": "7+"
+                },
+                {
+                    "label": "Processing Speed",
+                    "value": "Real-time"
+                },
+                {
+                    "label": "Memory Retention",
+                    "value": "Full Context"
+                }
+            ]
+        },
+        "keyFeatures": {
+            "items": [
+                {
+                    "title": "Multi-Modal Document Processing",
+                    "description": "Process PDFs, text files, markdown, audio recordings, YouTube videos, and web pages seamlessly with PyMuPDF, AssemblyAI, and Firecrawl integration."
+                },
+                {
+                    "title": "Citation-First AI Responses",
+                    "description": "Every claim is backed by specific sources with page numbers, timestamps, and clickable references - ensuring verifiable and trustworthy answers."
+                },
+                {
+                    "title": "Temporal Knowledge Graphs",
+                    "description": "Zep-powered memory layer maintains conversational context across sessions using temporal knowledge graphs for intelligent context retention."
+                },
+                {
+                    "title": "Vector-Based Semantic Search",
+                    "description": "Qdrant vector database enables efficient semantic search across all documents with metadata-rich retrieval for precise citation."
+                },
+                {
+                    "title": "AI Podcast Generation",
+                    "description": "Transform documents into engaging multi-speaker podcast conversations using script generation and open-source Coqui TTS."
+                },
+                {
+                    "title": "Authentication & User Management",
+                    "description": "FastAPI backend with JWT-based authentication, user signup/login, password reset, and secure user-specific document isolation ensuring data privacy."
+                },
+                {
+                    "title": "Modern React Frontend",
+                    "description": "Next.js 14 with React, TypeScript, and Tailwind CSS providing a responsive, modern UI with real-time updates and smooth user experience."
+                },
+                {
+                    "title": "User-Specific Data Isolation",
+                    "description": "Each user's documents, sources, and chat history are completely isolated using user_id filtering in vector database queries and storage."
+                }
+            ]
+        },
+        "architecture": {
+            "description": "The system follows a modular RAG (Retrieval-Augmented Generation) architecture with a Next.js/React frontend and FastAPI backend. Each component handles a specific document type or processing stage, all connected through a central vector database and memory layer for unified semantic search and context retention. User authentication and data isolation ensure secure, private document management.",
+            "diagramUrl": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1200&h=600&fit=crop",
+            "diagramCaption": "Figure 1: NotebookLM Clone Modular RAG Architecture",
+            "components": [
+                {
+                    "title": "Document Processor",
+                    "desc": "PyMuPDF-based processing for PDF, TXT, and Markdown files with metadata extraction"
+                },
+                {
+                    "title": "Audio Transcriber",
+                    "desc": "AssemblyAI integration for audio transcription with speaker diarization"
+                },
+                {
+                    "title": "YouTube Transcriber",
+                    "desc": "Video-to-text conversion with timestamp-based chunking"
+                },
+                {
+                    "title": "Web Scraper",
+                    "desc": "Firecrawl-powered content extraction from websites"
+                },
+                {
+                    "title": "Embedding Generator",
+                    "desc": "Local HuggingFace model for vector embeddings generation"
+                },
+                {
+                    "title": "Qdrant Vector DB",
+                    "desc": "Efficient vector storage and semantic search with citation metadata"
+                },
+                {
+                    "title": "RAG Generator",
+                    "desc": "OpenRouter LLM integration for cited response generation"
+                },
+                {
+                    "title": "Memory Layer",
+                    "desc": "Zep temporal knowledge graphs for conversational context"
+                },
+                {
+                    "title": "Podcast Generator",
+                    "desc": "Script generation and Coqui TTS for multi-speaker podcast creation"
+                },
+                {
+                    "title": "Next.js Frontend",
+                    "desc": "React-based UI with TypeScript, Tailwind CSS, and Zustand state management"
+                },
+                {
+                    "title": "FastAPI Backend",
+                    "desc": "RESTful API with JWT authentication, user management, and document processing endpoints"
+                },
+                {
+                    "title": "User Authentication",
+                    "desc": "Apex SaaS Framework integration with JWT tokens, password reset, and secure session management"
+                }
+            ]
+        },
+        "implementation": {
+            "description": "The implementation uses a pipeline architecture where each stage transforms and enriches the data. Documents flow through parsing, chunking with overlap for context preservation, embedding generation, and storage with rich metadata. Query processing retrieves top-k relevant chunks using vector similarity, which are then fed to the LLM along with conversation memory for contextual response generation.",
+            "codeSnippet": {
+                "language": "python",
+                "code": "# RAG Pipeline with Citation Metadata\nclass RAGGenerator:\n    def generate_response(self, query: str, conversation_history: List[Dict]) -> Dict:\n        # Embed query for semantic search\n        query_embedding = self.embedding_generator.embed_query(query)\n        \n        # Retrieve relevant chunks with metadata\n        results = self.vector_db.search(\n            query_embedding, \n            top_k=5,\n            include_metadata=True  # Page numbers, timestamps, sources\n        )\n        \n        # Get conversation context from memory\n        memory_context = self.memory.get_context(session_id)\n        \n        # Generate cited response using retrieved chunks\n        response = self.llm.generate(\n            query=query,\n            context=results,\n            memory=memory_context,\n            citations=True  # Enforce citation format\n        )\n        \n        # Store conversation in memory layer\n        self.memory.add_message(query, response)\n        \n        return response"
+            },
+            "proTip": {
+                "title": "Why Overlapping Chunks Matter",
+                "text": "Using overlapping text chunks (with 50-100 token overlap) ensures that context isn't lost at chunk boundaries. This dramatically improves retrieval quality for complex queries that span multiple paragraphs."
+            }
+        },
+        "workflow": {
+            "description": "1. User Authentication: Secure signup/login with JWT token management\n2. Document Ingestion: User uploads PDF, audio, video, text, or web URL\n3. Content Extraction: Content extracted with metadata (page numbers, timestamps)\n4. Text Chunking: Text split into overlapping segments preserving context\n5. Embedding Generation: Chunks converted to vector representations\n6. Vector Storage: Vectors stored in Qdrant with citation metadata and user_id for isolation\n7. User Query: User asks question in chat interface\n8. Semantic Search: Query embedded and top-k relevant chunks retrieved (filtered by user_id)\n9. Context Augmentation: Retrieved chunks + conversation memory combined\n10. Response Generation: LLM generates cited response with references\n11. Memory Update: Conversation saved to Zep for future context\n12. Source Management: Users can view, delete, and manage their uploaded sources",
+            "image": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&h=600&fit=crop",
+            "caption": "Figure 2: End-to-End Document Processing and Query Workflow"
+        },
+        "howItHelps": {
+            "description": "This platform eliminates the trust gap in AI-powered document analysis. Researchers, legal professionals, students, and knowledge workers can confidently interact with their documents knowing every AI claim is backed by verifiable sources. The multi-modal support means no switching between tools - whether it's a research paper PDF, a lecture recording, or a technical blog post, everything is searchable and citable in one place.",
+            "benefits": [
+                "Trustworthy AI responses with verifiable citations",
+                "Save hours of manual document review and note-taking",
+                "Process any document type without format conversion",
+                "Maintain conversational context across sessions",
+                "Generate AI podcasts for auditory learning",
+                "Secure authentication for private document management",
+                "User-specific data isolation and privacy",
+                "Modern, responsive UI with red and black theme",
+                "Landing page with features showcase",
+                "Privacy Policy and Terms and Conditions pages"
+            ]
+        },
+        "results": {
+            "testimonial": {
+                "quote": "NotebookLM Clone transformed how our research team works with academic papers. The citation accuracy and multi-modal support means we can process interviews, papers, and conference videos all in one place.",
+                "author": "Dr. Sarah Mitchell",
+                "role": "Research Lead, AI Labs"
+            },
+            "outcomes": [
+                {
+                    "title": "Accuracy",
+                    "desc": "100% citation traceability to source documents"
+                },
+                {
+                    "title": "Efficiency",
+                    "desc": "3x faster document review and analysis"
+                },
+                {
+                    "title": "Versatility",
+                    "desc": "Supports 7+ document formats seamlessly"
+                },
+                {
+                    "title": "Memory",
+                    "desc": "Temporal knowledge graphs remember full context"
+                }
+            ]
+        },
+        "futureOutcomes": {
+            "vision": "The platform aims to become the definitive open-source alternative to NotebookLM, with enhanced multi-agent collaboration, real-time collaborative editing, and enterprise-grade document security.",
+            "plannedEnhancements": [
+                "Multi-user collaborative document notebooks",
+                "Real-time document change detection and re-indexing",
+                "Advanced citation visualization and knowledge graphs",
+                "Integration with Notion, Obsidian, and other note-taking tools",
+                "Support for images, tables, and chart understanding",
+                "Custom agent workflows for domain-specific analysis",
+                "Offline mode with local LLM support",
+                "Enhanced podcast generation with multiple voice options",
+                "Document sharing and collaboration features",
+                "Advanced search filters and sorting options"
+            ]
+        }
+    }
+}

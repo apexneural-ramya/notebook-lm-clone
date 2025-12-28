@@ -10,104 +10,73 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
 parts/
 sdist/
 var/
 wheels/
-share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-MANIFEST
 
-# Virtual Environments
+# Virtual environments
 .venv/
 venv/
 ENV/
 env/
-.ENV
-.env
+backend/.venv/
 
-# Environment Variables
+# Environment variables
 .env
 .env.local
 .env.*.local
+backend/.env
 
-# IDE / Editors
+# Qdrant databases (in backend folder)
+backend/qdrant_db/
+backend/qdrant_db_*/
+backend/test_qdrant/
+backend/test_api/
+
+# Generated outputs
+outputs/
+backend/outputs/
+podcast_output/
+*.wav
+*.mp3
+*.m4a
+
+# Model cache
+.embedding_model/
+backend/.embedding_model/
+*.pth
+*.pt
+*.onnx
+
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+
+# OS
 .DS_Store
 Thumbs.db
-desktop.ini
 
-# Jupyter Notebook
-.ipynb_checkpoints
-*.ipynb_checkpoints/
+# Backend
+backend/.env
+backend/uploads/
 
-# Qdrant Vector Databases
-qdrant_db/
-qdrant_db_*/
-test_qdrant/
-test_api/
-
-# Generated Outputs
-outputs/
-podcast_output/
-*.wav
-*.mp3
-*.m4a
-*.ogg
-*.mp4
-
-# Model Cache
-.embedding_model/
-*.pth
-*.pt
-*.onnx
-*.bin
+# Frontend
+frontend/.next/
+frontend/out/
+frontend/node_modules/
+frontend/.env.local
+frontend/.env*.local
 
 # Logs
 *.log
-logs/
-
-# Temporary Files
-*.tmp
-*.temp
-*.bak
-*.cache
-temp/
-tmp/
-
-# OS Files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-desktop.ini
-
-# HuggingFace Cache (if downloaded to project)
-.cache/
-models/
-
-# Streamlit
-.streamlit/
-
-# Test Coverage
-.coverage
-htmlcov/
-.pytest_cache/
-.tox/
-
-# MyPy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+backend/logs/

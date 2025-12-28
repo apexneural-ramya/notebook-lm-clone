@@ -1,6 +1,8 @@
 # NotebookLM Clone
 In this project we build an open-source implementation of Google's NotebookLM that grounds AI responses in your documents with accurate citations. Built with modern AI technologies including RAG (Retrieval-Augmented Generation), vector databases, and conversational memory.
 
+> **📖 Quick Start Guide**: See [QUICK_START.md](QUICK_START.md) for step-by-step instructions on running the project and changing port numbers.
+
 ## Overview
 
 NotebookLM Clone is a document-grounded AI assistant that allows you to:
@@ -19,7 +21,8 @@ NotebookLM Clone is a document-grounded AI assistant that allows you to:
 - Qdrant vector database for efficient semantic search.
 - Zep's temporal knowledge graphs as the memory layer.
 - Coqui TTS as the open source Text-to-Speech model.
-- Streamlit for the interactive web UI.
+- Next.js 14 (React/TypeScript) for the modern web frontend.
+- FastAPI for the backend API.
 
 ### NotebookLM UI
 
@@ -45,11 +48,96 @@ NotebookLM Clone is a document-grounded AI assistant that allows you to:
 
 ## Installation & Setup
 
-**Prerequisites**: Python 3.11
+**Prerequisites**: Python 3.11, PostgreSQL database
 
-**Note for Windows Users**: Due to Windows path issues with HuggingFace model caching, the embedding model will be automatically downloaded to a `.embedding_model` directory in your project folder on first run. This is a one-time download (~400MB).
+**Note for Windows Users**: Due to Windows path issues with HuggingFace model caching, the embedding model will be automatically downloaded to a `backend/.embedding_model` directory on first run. This is a one-time download (~400MB).
+
+**Important**: All Python project files (`pyproject.toml`, `uv.lock`, `.python-version`) are now in the `backend/` directory. Run all `uv` commands from the `backend/` directory.
+
+### Authentication Setup
+
+The project includes a FastAPI backend with Apex authentication. **Authentication is integrated into the Next.js frontend** - users must login to access the application.
+
+To enable authentication:
+
+1. **Set up PostgreSQL database:**
+   ```bash
+   # Create database
+   createdb notebooklm
+   ```
+
+2. **Configure backend:**
+   ```bash
+   cd backend
+   cp .env.example .env
+   # Edit backend/.env with your DATABASE_URL and JWT_SECRET_KEY
+   # IMPORTANT: DATABASE_URL must use postgresql+asyncpg:// (not postgresql://)
+   ```
+
+3. **Run database migrations:**
+   ```bash
+   cd backend
+   uv run alembic revision --autogenerate -m "create_users_table"
+   uv run alembic upgrade head
+   ```
+   
+   **Troubleshooting migration errors:**
+   - If you get "psycopg2 is not async" error:
+     - Verify `DATABASE_URL` in `backend/.env` uses `postgresql+asyncpg://` format
+     - Check asyncpg is installed: `uv run python -c "import asyncpg; print('OK')"`
+     - Uninstall conflicting psycopg2: `uv pip uninstall psycopg2 psycopg2-binary`
+   - If you get "Can't locate revision" error:
+     - The database may have old migration history. Reset it:
+       ```bash
+       cd backend
+       uv run python -c "import asyncio; from sqlalchemy.ext.asyncio import create_async_engine; from sqlalchemy import text; from app.config import DATABASE_URL; import re; db_url = re.sub(r'postgresql\+[^:]+://', 'postgresql+asyncpg://', DATABASE_URL) if 'postgresql+asyncpg://' not in DATABASE_URL else DATABASE_URL; engine = create_async_engine(db_url); async def reset(): async with engine.connect() as conn: await conn.execute(text('DROP TABLE IF EXISTS alembic_version')); await conn.commit(); asyncio.run(reset())"
+       ```
+     - Then run migrations again
+
+4. **Configure environment variables:**
+   ```bash
+   # Backend configuration
+   cd backend
+   cp .env.example .env
+   # Edit backend/.env with your database and server settings
+   
+   # Frontend configuration
+   cd ../frontend
+   cp .env.example .env.local
+   # Edit frontend/.env.local with your backend API URL
+   ```
+
+5. **Start backend server:**
+   ```bash
+   cd backend
+   uv run python run.py
+   # Backend runs on the host/port specified in backend/.env:
+   # - BACKEND_HOST (default: 0.0.0.0)
+   # - BACKEND_PORT (default: 8000)
+   # Access at: http://localhost:8000 (or your configured host:port)
+   ```
+   
+   **Important:** Always use `uv run` to ensure dependencies are available.
+
+6. **Start Next.js frontend:**
+   ```bash
+   # In frontend directory (new terminal window)
+   cd frontend
+   npm install
+   npm run dev
+   # Frontend runs on http://localhost:3000 (Next.js default)
+   # To change port: npm run dev -- -p 3001
+   # Configure NEXT_PUBLIC_API_URL in frontend/.env.local to match your backend
+   ```
+   
+   **Note:** The Next.js app requires authentication. On first launch, you'll see a login/signup screen. Create an account or login to access the NotebookLM features.
+   
+   **Important:** 
+   - Set `NEXT_PUBLIC_API_URL` in `frontend/.env.local` to match your backend URL
+   - Format: `NEXT_PUBLIC_API_URL=http://localhost:8000` (or your configured backend host:port)
+   - If you change the frontend port, update `FRONTEND_URL` in `backend/.env` to match
     
-1. **Install dependencies:**
+1. **Install backend dependencies:**
     First, install `uv` and set up the environment:
     ```bash
     # MacOS/Linux
@@ -59,19 +147,10 @@ NotebookLM Clone is a document-grounded AI assistant that allows you to:
     powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
     ```
 
-    Install dependencies:
+    Install Python dependencies:
     ```bash
-    # Create a new directory for our project
-    uv init notebook-lm
-    cd notebook-lm
-
-    # Create virtual environment and activate it
-    uv venv
-    source .venv/bin/activate  # MacOS/Linux
-
-    .venv\Scripts\activate     # Windows
-
-    # Install dependencies
+    # Install dependencies (from backend directory)
+    cd backend
     uv sync
 
     # Additional steps (recommended)
@@ -79,15 +158,32 @@ NotebookLM Clone is a document-grounded AI assistant that allows you to:
     # TTS will automatically download models on first use
     ```
 
-2. **Set up environment variables:**
-   Create a `.env` file with your API keys as specified in `.env.example` file:
-   ```env
-   OPEN_ROUTER_API_KEY=<YOUR_OPEN_ROUTER_API_KEY>
-   ASSEMBLYAI_API_KEY=<YOUR_ASSEMBLYAI_API_KEY>
-   FIRECRAWL_API_KEY=<YOUR_FIRECRAWL_API_KEY>
-   ZEP_API_KEY=<YOUR_ZEP_API_KEY>
-   ```
+2. **Install frontend dependencies:**
+    ```bash
+    cd frontend
+    npm install
+    # or
+    yarn install
+    # or
+    pnpm install
+    ```
 
+2. **Set up backend environment variables:**
+   ```bash
+   cd backend
+   cp .env.example .env
+   # Edit backend/.env with your settings
+   ```
+   
+   Required variables in `backend/.env`:
+   - `DATABASE_URL` - PostgreSQL connection string (required)
+   - `JWT_SECRET_KEY` - Secret key for JWT tokens (required, change in production!)
+   - `OPEN_ROUTER_API_KEY` - For LLM access (required)
+   - `ASSEMBLYAI_API_KEY` - For audio transcription (optional)
+   - `FIRECRAWL_API_KEY` - For web scraping (optional)
+   - `ZEP_API_KEY` - For conversational memory (optional)
+   - `ENABLE_TTS` - Enable/disable Text-to-Speech (optional, default: true)
+   
    Get the API keys here:
    - [OpenRouter →](https://openrouter.ai/) (for LLM access)
    - [Assembly AI →](https://www.assemblyai.com/)
@@ -96,43 +192,77 @@ NotebookLM Clone is a document-grounded AI assistant that allows you to:
 
 
 ## Usage
-Running the Web Application
-```python
-uv run app.py or streamlit run app.py
-```
-The app will open at http://localhost:8501
+
+### Running the Application
+
+**Important:** Both backend and frontend must be running simultaneously.
+
+1. **Start the Backend (FastAPI):**
+   ```bash
+   cd backend
+   uv run python run.py
+   # Backend runs on host:port from backend/.env (BACKEND_HOST:BACKEND_PORT)
+   # Default: http://localhost:8000
+   ```
+
+2. **Start the Frontend (Next.js):**
+   ```bash
+   # In a new terminal window
+   cd frontend
+   npm run dev
+   # Frontend runs on http://localhost:3000 (Next.js default)
+   # To change port: npm run dev -- -p 3001
+   # If you change the frontend port, update FRONTEND_URL in backend/.env to match
+   ```
+
+3. **Access the Application:**
+   - Open http://localhost:3000 in your browser (or your configured frontend URL)
+   - Login or signup to access the NotebookLM features
+   - Upload documents, ask questions, and generate podcasts!
 
 ![app UI](assets/app-UI.png)
 
 
 ## Project Structure
 ```
-├── 📂 src/                            # Main source code
-│   ├── 📂 audio_processing/           # Audio transcription and processing
-│   │   ├── 🎵 audio_transcriber.py    # AssemblyAI audio transcription
-│   │   └── 🎥 youtube_transcriber.py  # YouTube video transcription
-│   │
-│   ├── 📂 document_processing/        # Document parsing and chunking
-│   │   └── 📄 doc_processor.py
-│   │
-│   ├── 📂 embeddings/                 # Vector embeddings generation
-│   │   └── 🧠 embedding_generator.py
-│   │
-│   ├── 📂 generation/                 # RAG pipeline and response generation
-│   │   └── 🤖 rag.py
-│   │
-│   ├── 📂 memory/                     # Conversation memory management
-│   │   └── 🧠 memory_layer.py         # Zep memory integration
-│   │
-│   ├── 📂 podcast/                    # Podcast generation system
-│   │   ├── 📝 script_generator.py     # Podcast script generation
-│   │   └── 🎙️ text_to_speech.py       # TTS audio generation
-│   │
-│   ├── 📂 vector_database/            # Vector storage and search
-│   │   └── 🗄️ qdrant_vector_db.py
-│   │
-│   └── 📂 web_scraping/               # Web content extraction
-│       └── 🌐 web_scraper.py          # FireCrawl web scraping
+├── 📂 backend/                        # FastAPI backend (all backend code)
+│   ├── 📂 app/                        # Backend application
+│   │   ├── 📂 routes/                # API routes
+│   │   ├── 📂 models/                # Database models
+│   │   └── api.py                    # FastAPI app
+│   ├── 📂 src/                        # Main source code (moved here)
+│   │   ├── 📂 audio_processing/      # Audio transcription and processing
+│   │   │   ├── 🎵 audio_transcriber.py
+│   │   │   └── 🎥 youtube_transcriber.py
+│   │   ├── 📂 document_processing/   # Document parsing and chunking
+│   │   │   └── 📄 doc_processor.py
+│   │   ├── 📂 embeddings/            # Vector embeddings generation
+│   │   │   └── 🧠 embedding_generator.py
+│   │   ├── 📂 generation/            # RAG pipeline and response generation
+│   │   │   └── 🤖 rag.py
+│   │   ├── 📂 memory/                # Conversation memory management
+│   │   │   └── 🧠 memory_layer.py
+│   │   ├── 📂 podcast/               # Podcast generation system
+│   │   │   ├── 📝 script_generator.py
+│   │   │   └── 🎙️ text_to_speech.py
+│   │   ├── 📂 vector_database/       # Vector storage and search
+│   │   │   └── 🗄️ qdrant_vector_db.py
+│   │   └── 📂 web_scraping/          # Web content extraction
+│   │       └── 🌐 web_scraper.py
+│   ├── 📂 migrations/                # Database migrations
+│   ├── 📂 qdrant_db/                 # Qdrant vector database (local)
+│   ├── 📂 data/                      # Sample documents and test data
+│   ├── 📂 notebooks/                  # Jupyter notebooks
+│   ├── 📂 outputs/                   # Generated outputs (podcasts, etc.)
+│   ├── 📂 .embedding_model/          # Embedding model cache
+│   ├── run.py                        # Server entry point
+│   └── .env.example                  # Backend environment template
+│
+├── 📂 frontend/                       # Next.js frontend application
+│   ├── 📂 app/                        # Next.js app directory
+│   ├── 📂 components/                # React components
+│   ├── 📂 lib/                       # Utilities and API client
+│   └── 📋 package.json               # Frontend dependencies
 │
 ├── 📂 tests/                          # Pipeline integration tests
 ├── 📂 data/                           # Sample documents
@@ -140,11 +270,8 @@ The app will open at http://localhost:8501
 ├── 📂 outputs/                        # Generated content
 ├── 📂 assets/                         # Sample images
 │
-├── 📱 app.py                          # Main Streamlit application
-├── 📋 pyproject.toml                  # Project configuration and dependencies
+├── 📋 pyproject.toml                  # Python project configuration
 ├── 📋 uv.lock                         # UV lock file
-├── 🐍 .python-version                 # Python version specification
-├── 📝 .env.example                    # Example configuration file
 ├── 📝 README.md                       # Project documentation
 ```
 
