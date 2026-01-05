@@ -23,6 +23,7 @@ if __name__ == "__main__":
         host=BACKEND_HOST,
         port=BACKEND_PORT,
         reload=True,
-        log_level="info"
+        log_level="info",
+        loop="asyncio"  # Use asyncio instead of uvloop to avoid nest_asyncio conflict
     )
 

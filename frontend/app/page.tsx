@@ -1,50 +1,10 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useStore } from '@/lib/store';
-import { Brain, FileText, MessageSquare, Mic } from 'lucide-react';
+import { Brain, FileText, MessageSquare, Mic } from '@/components/LandingPageIcons';
 
+// Server component - no client-side JavaScript, no redirects possible
+// Icons are in a separate client component but page itself is server-rendered
 export default function Home() {
-  const router = useRouter();
-  const { isAuthenticated } = useStore();
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (!isHydrated) return;
-    
-    if (isAuthenticated || (typeof window !== 'undefined' && localStorage.getItem('access_token'))) {
-      router.push('/app');
-    }
-  }, [isAuthenticated, isHydrated, router]);
-
-  if (!isHydrated) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Loading...</h1>
-        </div>
-      </div>
-    );
-  }
-
-  // If authenticated, show loading while redirecting
-  const hasToken = isAuthenticated || (typeof window !== 'undefined' && localStorage.getItem('access_token'));
-  if (hasToken) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Loading...</h1>
-        </div>
-      </div>
-    );
-  }
-
+  // Landing page - always public, no authentication checks, no redirects
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
@@ -188,4 +148,3 @@ export default function Home() {
     </div>
   );
 }
-

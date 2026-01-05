@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  # Frontend
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: notebooklm-frontend
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+      NODE_ENV: production
+    networks:
+      - notebooklm-frontend-network
+    restart: unless-stopped
+
+networks:
+  notebooklm-frontend-network:
+    driver: bridge
+

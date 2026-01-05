@@ -55,6 +55,17 @@ FastAPI backend with Apex authentication for the NotebookLM application.
 - `POST /api/auth/login` - Login and get tokens
 - `GET /api/auth/me` - Get current user info (requires auth)
 - `POST /api/auth/refresh` - Refresh access token
+- `POST /api/auth/forgot-password` - Request password reset
+- `POST /api/auth/reset-password` - Reset password with token
+- `POST /api/auth/change-password` - Change password (requires auth)
+- `GET /api/documents/sources` - Get user's sources (requires auth)
+- `DELETE /api/documents/sources/{source_name}` - Delete source (requires auth)
+- `POST /api/documents/upload` - Upload files (requires auth)
+- `POST /api/documents/urls` - Process URLs (requires auth)
+- `POST /api/documents/youtube` - Process YouTube video (requires auth)
+- `POST /api/documents/text` - Process text (requires auth)
+- `POST /api/chat/message` - Send chat message (requires auth)
+- `POST /api/podcast/generate` - Generate podcast (requires auth)
 
 ## Testing
 

@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStore } from '@/lib/store';
 import { podcastAPI } from '@/lib/api-client';
-import { Mic, Loader2 } from 'lucide-react';
+import { Mic, Loader2, Download } from 'lucide-react';
 
 export default function StudioTab() {
   const { sources, setLoading, isLoading } = useStore();
@@ -12,6 +12,17 @@ export default function StudioTab() {
   const [podcastLength, setPodcastLength] = useState('10 minutes');
   const [error, setError] = useState('');
   const [result, setResult] = useState<any>(null);
+  const [successMessages, setSuccessMessages] = useState<string[]>([]);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+
+  // Cleanup blob URL on unmount
+  useEffect(() => {
+    return () => {
+      if (audioUrl && audioUrl.startsWith('blob:')) {
+        window.URL.revokeObjectURL(audioUrl);
+      }
+    };
+  }, [audioUrl]);
 
   const handleGenerate = async () => {
     if (!selectedSource) {
@@ -21,15 +32,74 @@ export default function StudioTab() {
 
     setError('');
     setResult(null);
+    setSuccessMessages([]);
+    // Cleanup previous audio URL
+    if (audioUrl && audioUrl.startsWith('blob:')) {
+      window.URL.revokeObjectURL(audioUrl);
+    }
+    setAudioUrl(null);
     setLoading(true);
 
     try {
       const response = await podcastAPI.generatePodcast(selectedSource, podcastStyle, podcastLength);
       if (response.status && response.data) {
+        console.log('Podcast generation response:', response.data);
         setResult(response.data);
+        const messages: string[] = [];
+        if (response.data.script_segments) {
+          messages.push(`Generated podcast script with ${response.data.script_segments} dialogue segments!`);
+        }
+        if (response.data.audio_available && response.data.audio_file_count) {
+          messages.push(`Generated ${response.data.audio_file_count} audio files!`);
+        }
+        setSuccessMessages(messages);
+        
+        // Load audio as blob for playback (required for auth headers)
+        if (response.data.audio_available && response.data.audio_files && Array.isArray(response.data.audio_files) && response.data.audio_files.length > 0) {
+          const audioApiUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${response.data.audio_files[0]}`;
+          const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+          
+          console.log('Loading audio from:', audioApiUrl);
+          console.log('Audio files array:', response.data.audio_files);
+          
+          // Always fetch as blob since HTML5 audio doesn't support custom headers
+          fetch(audioApiUrl, {
+            headers: token ? {
+              'Authorization': `Bearer ${token}`
+            } : {}
+          })
+          .then(audioResponse => {
+            console.log('Audio fetch response status:', audioResponse.status);
+            if (!audioResponse.ok) {
+              throw new Error(`Audio fetch failed: ${audioResponse.status} ${audioResponse.statusText}`);
+            }
+            return audioResponse.blob();
+          })
+          .then(blob => {
+            console.log('Audio blob size:', blob.size, 'bytes');
+            const blobUrl = window.URL.createObjectURL(blob);
+            console.log('Audio loaded successfully, blob URL created:', blobUrl);
+            setAudioUrl(blobUrl);
+          })
+          .catch(audioErr => {
+            console.error('Failed to load audio:', audioErr);
+            setError(`Failed to load audio: ${audioErr.message}. Please check the browser console for details.`);
+            setAudioUrl(null);
+          });
+        } else {
+          console.log('Audio not available:', {
+            audio_available: response.data.audio_available,
+            audio_files: response.data.audio_files,
+            isArray: Array.isArray(response.data.audio_files),
+            length: response.data.audio_files?.length
+          });
+          setAudioUrl(null);
+        }
       }
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to generate podcast');
+      setSuccessMessages([]);
+      setAudioUrl(null);
     } finally {
       setLoading(false);
     }
@@ -58,6 +128,16 @@ export default function StudioTab() {
       {error && (
         <div className="bg-primary/20 border border-primary/50 text-primary px-4 py-3 rounded mb-4">
           {error}
+        </div>
+      )}
+
+      {successMessages.length > 0 && (
+        <div className="space-y-2 mb-4">
+          {successMessages.map((msg, idx) => (
+            <div key={idx} className="bg-accent/20 border border-accent/50 text-accent px-4 py-3 rounded">
+              {msg}
+            </div>
+          ))}
         </div>
       )}
 
@@ -131,9 +211,14 @@ export default function StudioTab() {
 
       {isLoading && (
         <div className="bg-secondary rounded-lg p-6 mb-6">
-          <div className="flex items-center justify-center gap-3 text-gray-400">
+          <div className="flex flex-col items-center justify-center gap-3 text-gray-400">
             <Loader2 size={24} className="animate-spin" />
-            <span>Processing podcast generation...</span>
+            <div className="text-center">
+              <p className="font-semibold">Generating podcast...</p>
+              <p className="text-sm mt-1 text-gray-500">
+                This may take a few minutes. Generating script and audio for all speakers...
+              </p>
+            </div>
           </div>
         </div>
       )}
@@ -183,22 +268,115 @@ export default function StudioTab() {
               </div>
             </div>
             
-            {result.audio_available && result.audio_files && result.audio_files.length > 0 && (
-              <div className="mb-4">
-                <h4 className="font-semibold mb-2 flex items-center gap-2">
-                  <span>🎵</span> Generated Podcast
-                </h4>
-                <div className="bg-secondary-light p-4 rounded-lg">
-                  <audio controls className="w-full">
-                    <source src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${result.audio_files[0]}`} type="audio/wav" />
-                    Your browser does not support the audio element.
-                  </audio>
-                  {result.audio_files.length > 1 && (
-                    <div className="mt-2 text-sm text-gray-400">
-                      {result.audio_files.length} audio files generated
-                    </div>
-                  )}
+            {/* Audio Section */}
+            {result.audio_available ? (
+              result.audio_files && Array.isArray(result.audio_files) && result.audio_files.length > 0 ? (
+                <div className="mb-4">
+                  <h4 className="font-semibold mb-3 flex items-center gap-2">
+                    <Mic size={20} />
+                    Generated Podcast
+                  </h4>
+                  <div className="bg-secondary-light p-4 rounded-lg">
+                    {audioUrl ? (
+                      <audio 
+                        controls 
+                        className="w-full mb-3"
+                        style={{ 
+                          width: '100%',
+                          height: '54px'
+                        }}
+                      >
+                        <source 
+                          src={audioUrl} 
+                          type="audio/wav" 
+                        />
+                        Your browser does not support the audio element.
+                      </audio>
+                    ) : (
+                      <div className="mb-3 p-3 bg-secondary rounded flex items-center justify-center gap-2 text-gray-400">
+                        <Loader2 size={20} className="animate-spin" />
+                        <span>Loading audio...</span>
+                      </div>
+                    )}
+                    <button
+                      onClick={async () => {
+                        try {
+                          const audioApiUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${result.audio_files[0]}`;
+                          const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+                          
+                          const response = await fetch(audioApiUrl, {
+                            headers: token ? {
+                              'Authorization': `Bearer ${token}`
+                            } : {}
+                          });
+                          
+                          if (!response.ok) {
+                            throw new Error('Failed to download audio');
+                          }
+                          
+                          const blob = await response.blob();
+                          const url = window.URL.createObjectURL(blob);
+                          const link = document.createElement('a');
+                          link.href = url;
+                          link.download = 'complete_podcast.wav';
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                          window.URL.revokeObjectURL(url);
+                        } catch (err) {
+                          console.error('Download failed:', err);
+                          alert('Failed to download podcast. Please try again.');
+                        }
+                      }}
+                      className="w-full px-4 py-2 bg-primary hover:bg-primary-hover rounded-lg transition-colors flex items-center justify-center gap-2 font-semibold"
+                    >
+                      <Download size={18} />
+                      Download Complete Podcast
+                    </button>
+                  </div>
                 </div>
+              ) : (
+                <div className="mb-4 bg-secondary-light p-4 rounded-lg">
+                  <p className="text-gray-400 text-center">
+                    Audio files were not generated. Please check backend logs for details.
+                  </p>
+                </div>
+              )
+            ) : (
+              <div className="mb-4 bg-secondary-light p-4 rounded-lg">
+                <p className="text-gray-400 text-center">
+                  Audio generation is not available.
+                  <br />
+                  <span className="text-sm mt-2 block">
+                    {result.tts_error === "apex_conflict" ? (
+                      <>
+                        <span className="text-primary font-semibold">Package Conflict Detected:</span>
+                        <br />
+                        Coqui TTS requires NVIDIA apex library, but apex-saas-framework is installed, causing a conflict.
+                        <br />
+                        <span className="text-xs mt-2 block text-gray-500">
+                          The podcast script was generated successfully. 
+                          <br />
+                          <span className="text-accent">Note: pyttsx3 fallback should be available. If you see this message, pyttsx3 may not be installed.</span>
+                          <br />
+                          Install pyttsx3: <code className="bg-secondary px-2 py-1 rounded">cd backend && uv add pyttsx3</code>
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        TTS (Text-to-Speech) may not be installed or enabled.
+                        <br />
+                        <span className="text-xs mt-2 block">
+                          To enable audio, install pyttsx3 (recommended): <code className="bg-secondary px-2 py-1 rounded">cd backend && uv add pyttsx3</code>
+                          <br />
+                          Or install Coqui TTS: <code className="bg-secondary px-2 py-1 rounded">pip install TTS{'>='}0.22.0</code>
+                          <br />
+                          If TTS is installed but not working, check backend logs for errors.
+                        </span>
+                      </>
+                    )}
+                  </span>
+                </p>
               </div>
             )}
 

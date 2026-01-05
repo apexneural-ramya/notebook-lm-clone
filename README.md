@@ -36,15 +36,17 @@ NotebookLM Clone is a document-grounded AI assistant that allows you to:
 ![architecture-diagram](assets/flow-diagram.jpg)
 
 ## Data Flow
-1. Document Ingestion: User uploads PDF, audio, video, text, or web URL
-2. Processing: Content extracted with metadata (page numbers, timestamps, and other metadata)
-3. Chunking: Text split into overlapping segments preserving context
-4. Embedding: Chunks converted to vector representations
-5. Storage: Vectors stored in Qdrant with citation metadata
-6. Query: User asks question → Query embedded → Semantic search
-7. Retrieval: Top-k relevant chunks retrieved with metadata
-8. Generation: Agent generates cited response using memory
-9. Memory: Conversation saved to Zep for future context
+1. User Authentication: Secure signup/login with JWT token management
+2. Document Ingestion: User uploads PDF, audio, video, text, or web URL
+3. Processing: Content extracted with metadata (page numbers, timestamps, and other metadata)
+4. Chunking: Text split into overlapping segments preserving context
+5. Embedding: Chunks converted to vector representations
+6. Storage: Vectors stored in Qdrant with citation metadata and user_id for isolation
+7. Query: User asks question → Query embedded → Semantic search (filtered by user_id)
+8. Retrieval: Top-k relevant chunks retrieved with metadata (user-specific)
+9. Generation: Agent generates cited response using memory
+10. Memory: Conversation saved to Zep for future context
+11. Source Management: Users can view, delete, and manage their uploaded sources
 
 ## Installation & Setup
 
@@ -77,7 +79,7 @@ To enable authentication:
 3. **Run database migrations:**
    ```bash
    cd backend
-   uv run alembic revision --autogenerate -m "create_users_table"
+  # uv run alembic revision --autogenerate -m "create_users_table"
    uv run alembic upgrade head
    ```
    
@@ -181,8 +183,10 @@ To enable authentication:
    - `OPEN_ROUTER_API_KEY` - For LLM access (required)
    - `ASSEMBLYAI_API_KEY` - For audio transcription (optional)
    - `FIRECRAWL_API_KEY` - For web scraping (optional)
-   - `ZEP_API_KEY` - For conversational memory (optional)
-   - `ENABLE_TTS` - Enable/disable Text-to-Speech (optional, default: true)
+- `ZEP_API_KEY` - For conversational memory (optional)
+- `ENABLE_TTS` - Enable/disable Text-to-Speech (optional, default: true)
+- `BACKEND_CORS_ORIGINS` - Comma-separated list of allowed CORS origins (required for production)
+- `FRONTEND_URL` - Frontend URL for redirects (optional, for production)
    
    Get the API keys here:
    - [OpenRouter →](https://openrouter.ai/) (for LLM access)
@@ -217,8 +221,10 @@ To enable authentication:
 
 3. **Access the Application:**
    - Open http://localhost:3000 in your browser (or your configured frontend URL)
-   - Login or signup to access the NotebookLM features
-   - Upload documents, ask questions, and generate podcasts!
+   - You'll see the landing page with features and navigation
+   - Click "Get Started" or "Sign In" to access authentication
+   - Create an account or login to access the NotebookLM features
+   - Upload documents, ask questions, generate podcasts, and manage your sources!
 
 ![app UI](assets/app-UI.png)
 
@@ -260,9 +266,22 @@ To enable authentication:
 │
 ├── 📂 frontend/                       # Next.js frontend application
 │   ├── 📂 app/                        # Next.js app directory
-│   ├── 📂 components/                # React components
-│   ├── 📂 lib/                       # Utilities and API client
-│   └── 📋 package.json               # Frontend dependencies
+│   │   ├── page.tsx                   # Landing page
+│   │   ├── login/                     # Login page
+│   │   ├── signup/                    # Signup page
+│   │   ├── app/                       # Main application (requires auth)
+│   │   ├── privacy/                  # Privacy Policy page
+│   │   └── terms/                     # Terms and Conditions page
+│   ├── 📂 components/                 # React components
+│   │   ├── SourcesSidebar.tsx         # Sources panel with delete functionality
+│   │   ├── SourceUpload.tsx           # Upload interface with processing loaders
+│   │   ├── ChatInterface.tsx          # Chat with citations
+│   │   ├── StudioTab.tsx              # Podcast generation with speaker colors
+│   │   └── Citation.tsx               # Citation component
+│   ├── 📂 lib/                        # Utilities and API client
+│   │   ├── api-client.ts              # API client with auth
+│   │   └── store.ts                   # Zustand state management
+│   └── 📋 package.json                # Frontend dependencies
 │
 ├── 📂 tests/                          # Pipeline integration tests
 ├── 📂 data/                           # Sample documents
@@ -281,4 +300,10 @@ To enable authentication:
 - **Memory-Powered**: Uses temporal knowledge graphs to remember context and preferences during conversations.
 - **Multi-Format Support**: Process PDFs, text files, audio recordings, YouTube videos and web content seamlessly.
 - **Efficient Retrieval**: All relevant chunks retrieved intelligently along with citation metadata.
-- **AI Podcast Generation**: Transform documents into engaging multi-speaker podcast conversations.
+- **AI Podcast Generation**: Transform documents into engaging multi-speaker podcast conversations with distinct speaker colors.
+- **User Authentication**: Secure signup, login, password reset, and change password functionality with JWT tokens.
+- **User-Specific Data Isolation**: Each user's documents, sources, and chat history are completely isolated for privacy and security.
+- **Source Management**: View, delete, and manage uploaded sources with visual feedback and processing loaders.
+- **Modern UI**: Responsive Next.js frontend with red and black theme, landing page, and legal pages.
+- **Landing Page**: Professional landing page with features showcase before authentication.
+- **Privacy & Terms**: Dedicated Privacy Policy and Terms and Conditions pages with footer links.

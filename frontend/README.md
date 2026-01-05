@@ -44,20 +44,35 @@ Open http://localhost:3000 in your browser (or your configured frontend URL).
 ```
 frontend/
 ├── app/              # Next.js app directory
+│   ├── page.tsx      # Landing page
 │   ├── login/        # Login page
 │   ├── signup/       # Signup page
-│   ├── app/          # Main application
+│   ├── app/          # Main application (requires auth)
+│   ├── privacy/      # Privacy Policy page
+│   ├── terms/        # Terms and Conditions page
 │   └── globals.css   # Global styles
 ├── components/       # React components
+│   ├── SourcesSidebar.tsx    # Sources panel with delete
+│   ├── SourceUpload.tsx      # Upload with loaders
+│   ├── ChatInterface.tsx     # Chat with citations
+│   ├── StudioTab.tsx         # Podcast generation
+│   └── Citation.tsx          # Citation component
 ├── lib/              # Utilities and API client
+│   ├── api-client.ts # API client with auth
+│   └── store.ts      # Zustand state management
 └── public/           # Static assets
 ```
 
 ## Features
 
-- Authentication (Login/Signup)
-- Document upload and processing
-- Chat interface with citations
-- Podcast generation
-- Three-panel layout (Sources, Chat, Studio)
+- **Landing Page**: Professional landing page with features showcase before authentication
+- **Authentication**: Login/Signup with password reset and change password functionality
+- **Document Upload**: Multi-format support (PDF, text, audio, YouTube, web URLs) with processing loaders
+- **Source Management**: View and delete uploaded sources with visual feedback
+- **Chat Interface**: Interactive chat with accurate citations and source references
+- **Podcast Generation**: AI-powered podcast creation with distinct speaker colors (Speaker 1 & Speaker 2)
+- **User-Specific Data**: Complete data isolation - each user only sees their own sources and chat history
+- **Three-Panel Layout**: Sources sidebar, Chat interface, and Studio tab
+- **Modern UI**: Red and black theme with responsive design
+- **Legal Pages**: Privacy Policy and Terms and Conditions pages with footer links
 
