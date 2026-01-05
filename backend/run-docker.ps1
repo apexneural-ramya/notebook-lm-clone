@@ -12,8 +12,8 @@ if (-not (Test-Path .env)) {
     Write-Host "Error: .env file not found!" -ForegroundColor Red
     Write-Host "Please create a .env file in the backend directory with required environment variables." -ForegroundColor Yellow
     Write-Host "Example:" -ForegroundColor Yellow
-    Write-Host "  DATABASE_URL=postgresql+asyncpg://postgres:postgres@host.docker.internal:5432/notebooklm" -ForegroundColor Gray
-    Write-Host "  JWT_SECRET_KEY=your-secret-key" -ForegroundColor Gray
+    Write-Host "  DATABASE_URL=postgresql+asyncpg://postgres:CHANGE_THIS_PASSWORD@host.docker.internal:5432/notebooklm" -ForegroundColor Gray
+    Write-Host "  JWT_SECRET_KEY=CHANGE_THIS_TO_A_STRONG_RANDOM_SECRET" -ForegroundColor Gray
     Write-Host "  BACKEND_CORS_ORIGINS=http://localhost:3002" -ForegroundColor Gray
     Write-Host "  BACKEND_PORT=8007" -ForegroundColor Gray
     Write-Host "  OPENROUTER_API_KEY=your-api-key" -ForegroundColor Gray
@@ -27,7 +27,7 @@ Write-Host "Checking database connection..." -ForegroundColor Cyan
 $dbUrl = Get-Content .env | Where-Object { $_ -match '^DATABASE_URL=' } | Select-Object -First 1
 if ($dbUrl -match 'localhost' -and -not ($dbUrl -match 'host\.docker\.internal')) {
     Write-Host "Warning: DATABASE_URL uses 'localhost'. In Docker, use 'host.docker.internal' to connect to host PostgreSQL." -ForegroundColor Yellow
-    Write-Host "Example: DATABASE_URL=postgresql+asyncpg://postgres:postgres@host.docker.internal:5432/notebooklm" -ForegroundColor Gray
+    Write-Host "Example: DATABASE_URL=postgresql+asyncpg://postgres:CHANGE_THIS_PASSWORD@host.docker.internal:5432/notebooklm" -ForegroundColor Gray
 }
 
 # Read BACKEND_PORT from .env file (default to 8000)

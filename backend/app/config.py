@@ -15,7 +15,10 @@ DATABASE_HOST = os.getenv("DATABASE_HOST", "localhost")
 DATABASE_PORT = int(os.getenv("DATABASE_PORT", "5432"))
 DATABASE_NAME = os.getenv("DATABASE_NAME", "notebooklm")
 DATABASE_USER = os.getenv("DATABASE_USER", "postgres")
-DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD", "postgres")
+# SECURITY: No default password - must be set in .env file
+DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD")
+if not DATABASE_PASSWORD:
+    raise ValueError("DATABASE_PASSWORD must be set in .env file. Never use default passwords in production.")
 
 # Build DATABASE_URL from components or use full URL
 # Priority: .env file > environment variable > default
@@ -45,10 +48,10 @@ else:
     DATABASE_URL = _raw_db_url
 
 # JWT Settings
-JWT_SECRET_KEY = os.getenv(
-    "JWT_SECRET_KEY",
-    "your-super-secret-key-change-in-production-please-use-a-strong-random-key"
-)
+# SECURITY: No default secret - must be set in .env file
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+if not JWT_SECRET_KEY:
+    raise ValueError("JWT_SECRET_KEY must be set in .env file. Generate with: openssl rand -hex 32")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))

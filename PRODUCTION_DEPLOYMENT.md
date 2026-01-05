@@ -19,12 +19,13 @@ Create `.env` file in `backend/` directory with production values:
 
 ```env
 # Database (REQUIRED)
-DATABASE_URL=postgresql+asyncpg://user:password@your-db-host:5432/notebooklm
+DATABASE_URL=postgresql+asyncpg://user:CHANGE_THIS_PASSWORD@your-db-host:5432/notebooklm
 # OR if using docker-compose with postgres service:
-DATABASE_URL=postgresql+asyncpg://postgres:password@postgres:5432/notebooklm
+DATABASE_URL=postgresql+asyncpg://postgres:CHANGE_THIS_PASSWORD@postgres:5432/notebooklm
 
 # JWT Security (CRITICAL - Change in production!)
-JWT_SECRET_KEY=your-very-strong-random-secret-key-min-32-characters
+# Generate with: openssl rand -hex 32
+JWT_SECRET_KEY=CHANGE_THIS_TO_A_STRONG_RANDOM_SECRET
 JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 REFRESH_TOKEN_EXPIRE_DAYS=7

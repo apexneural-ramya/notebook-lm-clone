@@ -11,6 +11,8 @@ This guide explains how to run the NotebookLM Backend API using Docker.
 
 ### 1. Create Environment File
 
+**⚠️ IMPORTANT:** After the security update, `DATABASE_PASSWORD` and `JWT_SECRET_KEY` are **REQUIRED** and must be set in your `.env` file. The application will fail to start if these are missing.
+
 Create a `.env` file in the `backend` directory with the following variables:
 
 ```env
@@ -19,16 +21,17 @@ Create a `.env` file in the `backend` directory with the following variables:
 # to connect to PostgreSQL running on your host machine
 # If using docker-compose, use 'postgres' as the hostname
 DATABASE_USER=postgres
-DATABASE_PASSWORD=postgres
+DATABASE_PASSWORD=CHANGE_THIS_PASSWORD
 DATABASE_NAME=notebooklm
 DATABASE_PORT=5432
 # For Docker (standalone): Use host.docker.internal
-DATABASE_URL=postgresql+asyncpg://postgres:postgres@host.docker.internal:5432/notebooklm
+DATABASE_URL=postgresql+asyncpg://postgres:CHANGE_THIS_PASSWORD@host.docker.internal:5432/notebooklm
 # For docker-compose: Use postgres service name
-# DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/notebooklm
+# DATABASE_URL=postgresql+asyncpg://postgres:CHANGE_THIS_PASSWORD@postgres:5432/notebooklm
 
 # JWT
-JWT_SECRET_KEY=your-super-secret-key-change-in-production
+# SECURITY: Generate a strong secret key: openssl rand -hex 32
+JWT_SECRET_KEY=CHANGE_THIS_TO_A_STRONG_RANDOM_SECRET
 JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 REFRESH_TOKEN_EXPIRE_DAYS=7
@@ -53,7 +56,26 @@ QDRANT_PORT=6333
 QDRANT_GRPC_PORT=6334
 ```
 
-### 2. Build and Run
+### 2. Validate Environment (Optional but Recommended)
+
+Before running Docker, validate your `.env` file:
+
+**Linux/Mac:**
+```bash
+cd backend
+chmod +x validate-env.sh
+./validate-env.sh
+```
+
+**Windows PowerShell:**
+```powershell
+cd backend
+.\validate-env.ps1
+```
+
+This will check that `DATABASE_PASSWORD` and `JWT_SECRET_KEY` are set with actual values (not placeholders).
+
+### 3. Build and Run
 
 ```bash
 cd backend
@@ -71,14 +93,14 @@ docker-compose down
 docker-compose down -v
 ```
 
-### 3. Run Database Migrations
+### 4. Run Database Migrations
 
 ```bash
 # Run migrations in the backend container
 docker-compose exec backend uv run alembic upgrade head
 ```
 
-### 4. Access Services
+### 5. Access Services
 
 - **Backend API**: http://localhost:8000
 - **API Docs**: http://localhost:8000/docs
@@ -134,8 +156,8 @@ docker run -d \
 docker run -d \
   --name notebooklm-backend \
   -p 8000:8000 \
-  -e DATABASE_URL=postgresql+asyncpg://user:pass@host:5432/dbname \
-  -e JWT_SECRET_KEY=your-secret-key \
+  -e DATABASE_URL=postgresql+asyncpg://user:CHANGE_THIS_PASSWORD@host:5432/dbname \
+  -e JWT_SECRET_KEY=CHANGE_THIS_TO_A_STRONG_RANDOM_SECRET \
   -e BACKEND_CORS_ORIGINS=http://localhost:3000 \
   -e OPENROUTER_API_KEY=your-api-key \
   -v $(pwd)/logs:/app/logs \
@@ -189,8 +211,8 @@ If you have an external PostgreSQL database, you can run just the backend:
 cd backend
 docker build -t notebooklm-backend .
 docker run -p 8000:8000 \
-  -e DATABASE_URL=postgresql+asyncpg://user:pass@host:5432/dbname \
-  -e JWT_SECRET_KEY=your-secret \
+  -e DATABASE_URL=postgresql+asyncpg://user:CHANGE_THIS_PASSWORD@host:5432/dbname \
+  -e JWT_SECRET_KEY=CHANGE_THIS_TO_A_STRONG_RANDOM_SECRET \
   -e BACKEND_CORS_ORIGINS=http://localhost:3000 \
   notebooklm-backend
 ```
